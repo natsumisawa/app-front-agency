@@ -14,19 +14,23 @@ import net.ruippeixotog.scalascraper.dsl.DSL.Parse._
 class  ScrapingController @Inject() extends Controller {
 
   def catchWords = Action { implicit request =>
-    val doc = JsoupBrowser().get("https://weather.yahoo.co.jp/weather/")
-    for {
-      area <- doc >> elements("#map > ul > li > a > dl")
-      (name, weather) = area >> (text("dt"), texts("dd"))
-    } println(s"$name - ${weather.mkString(" ")}")
-    println("--------------")
-    val songsDoc = JsoupBrowser().get("https://www.uta-net.com/search/?Aselect=3&Keyword=%E3%81%A4%E3%82%93%E3%81%8F&Bselect=3&x=0&y=0")
-    val list = for {
-      area <- songsDoc >> elements("table > tbody > tr > td.side td1")
-      words = area >> (texts("a"))
+    val parentPageDoc = JsoupBrowser().get("https://www.uta-net.com/search/?Aselect=3&Bselect=3&Keyword=%E3%81%A4%E3%82%93%E3%81%8F&sort=&pnum=1")
+    val urlList = for {
+      area <- parentPageDoc >> elements("table > tbody > tr > td")
+      url = area >> (attrs("href")("a"))
+    } yield {
+      url.filter(url => url != Nil).filter(url => url.startsWith("/song"))
+    }
+
+    val wordsResult = for {
+      url <- urlList
+      songPageUrl <- url
+      doc = JsoupBrowser().get("https://www.uta-net.com" + songPageUrl)
+      area <- doc >> elements("#flash_area")
+      words = area >> text("#kashi_area")
     } yield words
 
-    println(list)
+    println(wordsResult)
 
     Ok(views.html.index())
   }
