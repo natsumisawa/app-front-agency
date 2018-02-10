@@ -1,5 +1,11 @@
-@()
+@(kashi: Seq[models.Tables.KashiRow])
+@import helper._
 
 @main("Welcome to Play") {
   <h1>Welcome to Play!</h1>
+  @kashi.map { kashi =>
+    <p>@kashi.kashi</p>
+    <p>@kashi.title</p>
+    <p>@kashi.artist</p>
+  }
 }
