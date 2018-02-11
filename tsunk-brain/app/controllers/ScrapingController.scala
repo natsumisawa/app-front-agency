@@ -47,7 +47,6 @@ class  ScrapingController @Inject()(val dbConfigProvider: DatabaseConfigProvider
         Ok
       )
     }
-
     Ok
   }
 }

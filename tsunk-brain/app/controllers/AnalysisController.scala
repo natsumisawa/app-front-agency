@@ -26,22 +26,23 @@ class AnalysisController @Inject()(val dbConfigProvider: DatabaseConfigProvider)
 
   /**
   * 形態素解析GooAPIにPOSTリクエストを送り、レスポンスをパースする
+  * HowTo
+  * 1. 一行目のfilterでdata.idの範囲を調整する（apiたたきすぎるとリクエスト拒否されるので気をつける）
+  * 2. apiに送るsentenceをele.kashiにする
   **/
   def analysisByGooApi = Action { implicit request =>
-    db.run(Kashi.filter(data => data.id === 1481).result).map { kashi =>
-      val url = "https://labs.goo.ne.jp/api/morph"
-      val data = Json.obj(
-        "app_id" -> "3746eabd0f585048486a5c5ffae307204bcb1302e0b5bbd83a6259569a5e8ee5",
-        // 本番だけkashiにする、apiたたきすぎるとリクエスト拒否されるので気をつける
-        "sentence" -> "なまずはうろこがない〜。歌詞を形態素解析します。"
-        // kashi.head.kashi
-      )
-      WS.url(url).withHeaders("Accept" -> "application/json").post(data).map{
-        response =>
-          val result = response.json.validate[AnalysisData]
-          println(result)
-          insertWord(result, kashi.head.id)
-          // TODO(sawa): そのままDBに保存する
+    db.run(Kashi.filter(data => data.id === 1).result).map { kashi =>
+      kashi.map {ele =>
+        val data = Json.obj(
+          "app_id" -> "3746eabd0f585048486a5c5ffae307204bcb1302e0b5bbd83a6259569a5e8ee5",
+          "sentence" -> "ここをele.kashiにする"
+        )
+        val gooUrl = "https://labs.goo.ne.jp/api/morph"
+        WS.url(gooUrl).withHeaders("Accept" -> "application/json").post(data).map{
+          response =>
+            val result = response.json.validate[AnalysisData]
+            insertWord(result, ele.id)
+        }
       }
     }
     Ok
@@ -55,7 +56,7 @@ class AnalysisController @Inject()(val dbConfigProvider: DatabaseConfigProvider)
       val wordsList = analysisData.word_list
       val filteredWords = for {
         words <- wordsList
-        morpheme <- words.filter(ele => ele(0) != "バイト")
+        morpheme <- words
       } yield {
         val wordResult = new StringBuilder
         words.map(e => wordResult.append(e(0)))
