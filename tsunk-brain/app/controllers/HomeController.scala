@@ -13,20 +13,12 @@ import slick.driver.MySQLDriver.api._
 
 import models.Tables._
 
-/**
- * This controller creates an `Action` to handle HTTP requests to the
- * application's home page.
- */
 @Singleton
 class HomeController @Inject()(val dbConfigProvider: DatabaseConfigProvider) extends Controller with HasDatabaseConfigProvider[JdbcProfile] {
 
   /**
-   * Create an Action to render an HTML page.
-   *
-   * The configuration in the `routes` file means that this method
-   * will be called when the application receives a `GET` request with
-   * a path of `/`.
-   */
+  * DB接続確認
+  **/
   def index = Action.async { implicit req =>
     db.run(Kashi.result).map(kashi =>
       Ok(views.html.index(kashi))
