@@ -23,9 +23,6 @@ import models.Tables._
 @Singleton
 class  ScrapingController @Inject()(val dbConfigProvider: DatabaseConfigProvider) extends Controller with HasDatabaseConfigProvider[JdbcProfile] {
 
-  case class AnalysisData(request_id: String, word_list: Seq[Seq[Seq[String]]])
-  implicit val analysisDataReads  = Json.reads[AnalysisData]
-
   /**
   * すべての歌詞をスクレイピングし、DBに保存する
   **/
@@ -52,42 +49,5 @@ class  ScrapingController @Inject()(val dbConfigProvider: DatabaseConfigProvider
     }
 
     Ok
-    // analysisByGooApi(result)
-  }
-
-  /**
-  * 形態素解析GooAPIにPOSTリクエストを送り、レスポンスをパースする
-  **/
-  def analysisByGooApi(wordsList: List[String]): Unit = {
-    wordsList.map(word => {
-      val url = "https://labs.goo.ne.jp/api/morph"
-      val data = Json.obj(
-        "app_id" -> "3746eabd0f585048486a5c5ffae307204bcb1302e0b5bbd83a6259569a5e8ee5",
-        // 本番だけwordにする、たたきすぎるとリクエスト拒否されるので気をつける
-        "sentence" -> "日本語の解析"
-      )
-      WS.url(url).withHeaders("Accept" -> "application/json").post(data).map{
-        response =>
-          val result = response.json.validate[AnalysisData]
-          wordsCount(result)
-          // TODO(sawa): そのままDBに保存する
-      }
-    })
-  }
-
-  /**
-  * 形態素解析されたワードを分析する
-  **/
-  def wordsCount(result: JsResult[AnalysisData]): Unit = {
-    result.map(analysisData => {
-      val wordsList = analysisData.word_list
-      val filteredWords = for {
-        words <- wordsList
-        morpheme <- words.filter(ele => ele(0) != "バイト")
-      } yield {
-        morpheme
-      }
-      println(filteredWords)
-    })
   }
 }
