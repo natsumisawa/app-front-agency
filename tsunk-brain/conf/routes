@@ -4,11 +4,21 @@
 # ~~~~
 
 # An example controller showing a sample home page
-GET     /                           controllers.HomeController.index
+GET      /                           controllers.HomeController.index
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+GET      /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 
-GET     /brain/catch                controllers.ScrapingController.catchWords
+GET      /brain/catch                controllers.ScrapingController.catchWords
 
-GET     /brain/analysis             controllers.AnalysisController.analysisByGooApi
+GET      /brain/analysis             controllers.AnalysisController.analysisByGooApi
+
+# GET     /report                     controllers.ReportController.index
+
+# POST    /report/count               controllers.ReportController.countWord
+
+GET      /api/kashi                  controllers.HomeController.getKashi
+OPTIONS  /api/kashi                  controllers.HomeController.getKashi
+
+GET      /api/word                   controllers.HomeController.getRandomWord
+OPTIONS  /api/word                   controllers.HomeController.getRandomWord
