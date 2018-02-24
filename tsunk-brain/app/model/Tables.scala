@@ -1,4 +1,4 @@
-package models
+package model
 // AUTO-GENERATED Slick data model
 /** Stand-alone Slick data model for immediate use */
 object Tables extends {
@@ -50,23 +50,26 @@ trait Tables {
   /** Entity class storing rows of table Morpheme
    *  @param id Database column id SqlType(INT UNSIGNED), AutoInc, PrimaryKey
    *  @param morpheme Database column morpheme SqlType(CHAR), Length(11,false), Default()
+   *  @param morphemeClass Database column morpheme_class SqlType(CHAR), Length(11,false), Default(None)
    *  @param wordId Database column word_id SqlType(INT UNSIGNED) */
-  case class MorphemeRow(id: Int, morpheme: String = "", wordId: Int)
+  case class MorphemeRow(id: Int, morpheme: String = "", morphemeClass: Option[String] = None, wordId: Int)
   /** GetResult implicit for fetching MorphemeRow objects using plain SQL queries */
-  implicit def GetResultMorphemeRow(implicit e0: GR[Int], e1: GR[String]): GR[MorphemeRow] = GR{
+  implicit def GetResultMorphemeRow(implicit e0: GR[Int], e1: GR[String], e2: GR[Option[String]]): GR[MorphemeRow] = GR{
     prs => import prs._
-    MorphemeRow.tupled((<<[Int], <<[String], <<[Int]))
+    MorphemeRow.tupled((<<[Int], <<[String], <<?[String], <<[Int]))
   }
   /** Table description of table morpheme. Objects of this class serve as prototypes for rows in queries. */
   class Morpheme(_tableTag: Tag) extends Table[MorphemeRow](_tableTag, "morpheme") {
-    def * = (id, morpheme, wordId) <> (MorphemeRow.tupled, MorphemeRow.unapply)
+    def * = (id, morpheme, morphemeClass, wordId) <> (MorphemeRow.tupled, MorphemeRow.unapply)
     /** Maps whole row to an option. Useful for outer joins. */
-    def ? = (Rep.Some(id), Rep.Some(morpheme), Rep.Some(wordId)).shaped.<>({r=>import r._; _1.map(_=> MorphemeRow.tupled((_1.get, _2.get, _3.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
+    def ? = (Rep.Some(id), Rep.Some(morpheme), morphemeClass, Rep.Some(wordId)).shaped.<>({r=>import r._; _1.map(_=> MorphemeRow.tupled((_1.get, _2.get, _3, _4.get)))}, (_:Any) =>  throw new Exception("Inserting into ? projection not supported."))
 
     /** Database column id SqlType(INT UNSIGNED), AutoInc, PrimaryKey */
     val id: Rep[Int] = column[Int]("id", O.AutoInc, O.PrimaryKey)
     /** Database column morpheme SqlType(CHAR), Length(11,false), Default() */
     val morpheme: Rep[String] = column[String]("morpheme", O.Length(11,varying=false), O.Default(""))
+    /** Database column morpheme_class SqlType(CHAR), Length(11,false), Default(None) */
+    val morphemeClass: Rep[Option[String]] = column[Option[String]]("morpheme_class", O.Length(11,varying=false), O.Default(None))
     /** Database column word_id SqlType(INT UNSIGNED) */
     val wordId: Rep[Int] = column[Int]("word_id")
 
