@@ -16,13 +16,23 @@ import slick.driver.MySQLDriver.api._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import models.Tables._
+import model.Tables._
 
 @Singleton
 class AnalysisController @Inject()(val dbConfigProvider: DatabaseConfigProvider) extends Controller with HasDatabaseConfigProvider[JdbcProfile] {
 
   case class AnalysisData(request_id: String, word_list: Seq[Seq[Seq[String]]])
   implicit val analysisDataReads  = Json.reads[AnalysisData]
+
+  case class WordDataOfApiResponse(
+    word: String,
+    morpheme: MorphemeDataOfApiResponse
+  )
+
+  case class MorphemeDataOfApiResponse(
+    morpheme: String,
+    morphemeClass: String
+  )
 
   /**
   * 形態素解析GooAPIにPOSTリクエストを送り、レスポンスをパースする
@@ -56,20 +66,24 @@ class AnalysisController @Inject()(val dbConfigProvider: DatabaseConfigProvider)
       val wordsList = analysisData.word_list
       val filteredWords = for {
         words <- wordsList
-        morpheme <- words
+        morpheme <- words.filter(w => w(1) != "空白")
       } yield {
-        val wordResult = new StringBuilder
-        words.map(e => wordResult.append(e(0)))
-        List(List(wordResult.toString), morpheme)
+        WordDataOfApiResponse(
+          word = words.map(e => e(0)).mkString,
+          morpheme = MorphemeDataOfApiResponse(morpheme(0), morpheme(1))
+        )
       }
-      val moldedWordData = filteredWords.groupBy(_.head.head).mapValues(value => value.map(e => e(1)))
+      val moldedWordData = filteredWords.groupBy(_.word).mapValues {v =>
+        v.map(e => e.morpheme)
+      }
+      // @return Map(ここをele.kashiにする。 -> List(Morpheme(ここ,名詞), Morpheme(を,格助詞), Morpheme(ele,Alphabet), Morpheme(.,句点), Morpheme(kashi,Roman), Morpheme(に,格助詞), Morpheme(する,動詞語幹), Morpheme(。,句点)), こんにちは。 -> List(Morpheme(こんにちは,独立詞), Morpheme(。,句点)))
 
       for (kv <- moldedWordData) {
         val (k,v) = kv
         val wordData = WordRow(0, k, kashiId)
         db.run(Word returning Word.map(_.id)  += wordData).map {wordId =>
-          v.map {mor =>
-            val morphemeData = MorphemeRow(0, mor.head, wordId)
+          v.map {morpheme =>
+            val morphemeData = MorphemeRow(0, morpheme.morpheme, Option(morpheme.morphemeClass), wordId)
             db.run(Morpheme += morphemeData).map {_ =>
               Ok
             }
