@@ -1,0 +1,7 @@
+<h2>歌詞一覧</h2>
+<button (click)="getMorpheme()">ゲット！</button>
+<div *ngIf="morphemes">
+  <span *ngFor="let morpheme of morphemes">
+  <p>{{morpheme.surface}}</p>
+  <span>
+<div>

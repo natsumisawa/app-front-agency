@@ -17,6 +17,8 @@ GET      /brain/analysis             controllers.AnalysisController.analysisByGo
 
 # POST    /report/count               controllers.ReportController.countWord
 
+GET      /api/word/frequent          controllers.ReportController.getFrequentWords
+
 GET      /api/kashi                  controllers.HomeController.getKashi
 OPTIONS  /api/kashi                  controllers.HomeController.getKashi
 

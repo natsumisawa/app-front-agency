@@ -11,6 +11,7 @@ import { AppComponent } from './app.component';
 import { ReportComponent } from './report/report.component';
 // import { GeneratorComponent } from './generator/generator.component';
 import { KashiComponent } from './kashi/kashi.component';
+import { GeneratorComponent } from './generator/generator.component';
 
 
 @NgModule({
@@ -18,7 +19,8 @@ import { KashiComponent } from './kashi/kashi.component';
     AppComponent,
     ReportComponent,
     // GeneratorComponent,
-    KashiComponent
+    KashiComponent,
+    GeneratorComponent
   ],
   imports: [
     BrowserModule,
